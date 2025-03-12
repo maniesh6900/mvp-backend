@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  name     String
+  password String
+  type     Type   @default(ADMIN)
+}
+
+enum Type {
+  CLIENT
+  ADMIN
+}
+
+model Customer {
+  id               String             @id @default(uuid())
+  name             String
+  phone            String?
+  address          String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  Campaign         Campaign?          @relation(fields: [campaignId], references: [id])
+  campaignId       String?
+  FollowUpCampaign FollowUpCampaign[]
+}
+
+model Campaign {
+  id               String             @id @default(uuid())
+  title            String
+  description      String
+  startedDate      String
+  endDate          String
+  message          String
+  offer            String
+  Customer         Customer[]
+  status           Status             @default(Active)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  references       references[]
+  FollowUpCampaign FollowUpCampaign[]
+}
+
+enum Status {
+  Active
+  Inactive
+  Completed
+}
+
+model references {
+  id               String   @id @default(uuid())
+  firstCustomerId  String
+  secondCustomerId String
+  campaignId       String
+  campaign         Campaign @relation(fields: [campaignId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  userId           String?
+}
+
+model FollowUpCampaign {
+  id         String   @id @default(uuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  date       DateTime
+  customerID String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customerId String
+}
+
+model Reffer {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  ReffencedUser ReffencedUser[]
+}
+
+model ReffencedUser {
+  id          String @id @default(uuid())
+  refferEmail String
+  reffer      Reffer @relation(fields: [refferEmail], references: [email])
+  name        String
+  email       String
+}
